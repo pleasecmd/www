@@ -29,13 +29,65 @@
     setTimeout(type, 60);
   };
 
+  let moved = false;
+
+  const move = (el) => {
+    const parent = el.closest(".terminal");
+    let start;
+    let isMoving = false;
+    let x;
+    let y;
+    const onMouseDown = (event) => {
+      if (!moved) {
+        const rect = el.getBoundingClientRect();
+        x = rect.x;
+        y = rect.y;
+        render();
+        moved = true;
+      }
+      isMoving = true;
+      start = event;
+    };
+    const onMouseUp = () => {
+      isMoving = false;
+    };
+    const onMouseMove = (event) => {
+      if (isMoving) {
+        const deltaX = event.x - start.x;
+        const deltaY = event.y - start.y;
+        x += deltaX;
+        y += deltaY;
+        start = event;
+      }
+    };
+    el.addEventListener("mousedown", onMouseDown);
+    el.addEventListener("mouseup", onMouseUp);
+    document.addEventListener("mousemove", onMouseMove);
+    const render = () => {
+      parent.style.top = `${y}px`;
+      parent.style.left = `${x}px`;
+      if (isMoving) {
+        requestAnimationFrame(render);
+      }
+    };
+    return () => {
+      el.removeEventListener("mousedown", onMouseDown);
+      el.removeEventListener("mouseup", onMouseUp);
+      document.removeEventListener("mousemove", onMouseMove);
+    };
+  };
+
   onMount(() => {
     type();
   });
 </script>
 
-<div class="terminal">
-  <div class="head">
+{#if moved}
+  <div class="placeholder" />
+{/if}
+
+<div class="terminal" class:moved>
+  <div class="head" use:move>
     <div class="button exit" />
     <div class="button minimize" />
     <div class="button expand" />
@@ -85,11 +137,19 @@
     width: 100%;
     max-width: 960px;
   }
+
+  .placeholder {
+    min-height: 400px;
+  }
+  .moved {
+    position: absolute;
+  }
   .head {
     background: #282a36;
     padding: 0.5em;
     border-bottom: 1px solid #44475a;
     display: flex;
+    cursor: move;
   }
   .grow {
     flex-grow: 1;
