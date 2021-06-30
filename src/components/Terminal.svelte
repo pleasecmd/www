@@ -35,6 +35,7 @@
     const parent = el.closest(".terminal");
     let start;
     let isMoving = false;
+    let isStopped = false;
     let x;
     let y;
     const onMouseDown = (event) => {
@@ -66,11 +67,12 @@
     const render = () => {
       parent.style.top = `${y}px`;
       parent.style.left = `${x}px`;
-      if (isMoving) {
+      if (!isStopped) {
         requestAnimationFrame(render);
       }
     };
     return () => {
+      isStopped = true;
       el.removeEventListener("mousedown", onMouseDown);
       el.removeEventListener("mouseup", onMouseUp);
       document.removeEventListener("mousemove", onMouseMove);
